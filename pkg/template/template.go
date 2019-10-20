@@ -3,17 +3,19 @@ package template
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/spf13/cast"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"text/template"
 
-	"github.com/tmrts/boilr/pkg/boilr"
-	"github.com/tmrts/boilr/pkg/prompt"
-	"github.com/tmrts/boilr/pkg/util/osutil"
-	"github.com/tmrts/boilr/pkg/util/stringutil"
-	"github.com/tmrts/boilr/pkg/util/tlog"
+	"github.com/seanlatimer/boilr/pkg/boilr"
+	"github.com/seanlatimer/boilr/pkg/prompt"
+	"github.com/seanlatimer/boilr/pkg/util/osutil"
+	"github.com/seanlatimer/boilr/pkg/util/stringutil"
+	"github.com/seanlatimer/boilr/pkg/util/tlog"
 )
 
 // Interface is contains the behavior of boilr templates.
@@ -63,6 +65,15 @@ func Get(path string) (Interface, error) {
 
 		return metadata, nil
 	}(filepath.Join(absPath, boilr.ContextFileName))
+	if err != nil {
+		return nil, err
+	}
+
+	copyOnly := make([]string, 0)
+	if val, ok := ctxt["CopyOnly"]; ok {
+		copyOnly = cast.ToStringSlice(val)
+		delete(ctxt, "CopyOnly")
+	}
 
 	metadataExists, err := osutil.FileExists(filepath.Join(absPath, boilr.TemplateMetadataName))
 	if err != nil {
@@ -89,6 +100,7 @@ func Get(path string) (Interface, error) {
 
 	return &dirTemplate{
 		Context:  ctxt,
+		CopyOnly: copyOnly,
 		FuncMap:  FuncMap,
 		Path:     filepath.Join(absPath, boilr.TemplateDirName),
 		Metadata: md,
@@ -98,6 +110,7 @@ func Get(path string) (Interface, error) {
 type dirTemplate struct {
 	Path     string
 	Context  map[string]interface{}
+	CopyOnly []string
 	FuncMap  template.FuncMap
 	Metadata Metadata
 
@@ -214,39 +227,56 @@ func (t *dirTemplate) Execute(dirPrefix string) error {
 				return err
 			}
 
-			f, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY, fi.Mode())
-			if err != nil {
-				return err
+			var shouldCopy bool
+			for _, copy := range t.CopyOnly {
+				if strings.Replace(copy, "/", "\\", -1) == newName {
+					shouldCopy = true
+					break
+				}
 			}
-			defer f.Close()
-
-			defer func(fname string) {
-				contents, err := ioutil.ReadFile(fname)
+			if shouldCopy {
+				err := osutil.CopyFile(filename, target)
 				if err != nil {
-					tlog.Debug(fmt.Sprintf("couldn't read the contents of file %q, got error %q", fname, err))
-					return
+					return err
+				}
+				if !t.ShouldUseDefaults {
+					tlog.Success(fmt.Sprintf("Copied %s", newName))
+				}
+			} else {
+				f, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY, fi.Mode())
+				if err != nil {
+					return err
+				}
+				defer f.Close()
+
+				defer func(fname string) {
+					contents, err := ioutil.ReadFile(fname)
+					if err != nil {
+						tlog.Debug(fmt.Sprintf("couldn't read the contents of file %q, got error %q", fname, err))
+						return
+					}
+
+					if isOnlyWhitespace(contents) {
+						os.Remove(fname)
+						return
+					}
+				}(f.Name())
+
+				contentsTmpl := template.Must(template.
+					New("file contents template").
+					Option(Options...).
+					Funcs(FuncMap).
+					ParseFiles(filename))
+
+				fileTemplateName := filepath.Base(filename)
+
+				if err := contentsTmpl.ExecuteTemplate(f, fileTemplateName, nil); err != nil {
+					return err
 				}
 
-				if isOnlyWhitespace(contents) {
-					os.Remove(fname)
-					return
+				if !t.ShouldUseDefaults {
+					tlog.Success(fmt.Sprintf("Created %s", newName))
 				}
-			}(f.Name())
-
-			contentsTmpl := template.Must(template.
-				New("file contents template").
-				Option(Options...).
-				Funcs(FuncMap).
-				ParseFiles(filename))
-
-			fileTemplateName := filepath.Base(filename)
-
-			if err := contentsTmpl.ExecuteTemplate(f, fileTemplateName, nil); err != nil {
-				return err
-			}
-
-			if !t.ShouldUseDefaults {
-				tlog.Success(fmt.Sprintf("Created %s", newName))
 			}
 		}
 

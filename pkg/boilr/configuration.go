@@ -3,12 +3,13 @@ package boilr
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
-	"os"
+	"log"
 	"path/filepath"
 
-	"github.com/tmrts/boilr/pkg/util/exit"
-	"github.com/tmrts/boilr/pkg/util/osutil"
+	"github.com/seanlatimer/boilr/pkg/util/exit"
+	"github.com/seanlatimer/boilr/pkg/util/osutil"
 )
 
 const (
@@ -35,12 +36,6 @@ const (
 
 	// TemplateMetadataName is the name of the file that contains the metadata about the template saved in registry
 	TemplateMetadataName = "__metadata.json"
-
-	// GithubOwner is the owner of the github repository
-	GithubOwner = "tmrts"
-
-	// GithubRepo is the name of the github repository
-	GithubRepo = "boilr"
 )
 
 // Configuration contains the values for needed for boilr to operate.
@@ -62,7 +57,11 @@ func IsTemplateDirInitialized() (bool, error) {
 }
 
 func init() {
-	homeDir := os.Getenv("HOME")
+	homeDir, err := homedir.Dir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if homeDir == "" {
 		// FIXME is this really necessary?
 		exit.Error(fmt.Errorf("environment variable ${HOME} should be set"))

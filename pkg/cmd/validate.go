@@ -3,9 +3,9 @@ package cmd
 import (
 	"errors"
 
+	"github.com/seanlatimer/boilr/pkg/util/exit"
+	"github.com/seanlatimer/boilr/pkg/util/validate"
 	cli "github.com/spf13/cobra"
-	"github.com/tmrts/boilr/pkg/util/exit"
-	"github.com/tmrts/boilr/pkg/util/validate"
 )
 
 var (

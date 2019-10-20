@@ -8,11 +8,11 @@ import (
 
 	cli "github.com/spf13/cobra"
 
-	"github.com/tmrts/boilr/pkg/boilr"
-	"github.com/tmrts/boilr/pkg/template"
-	"github.com/tmrts/boilr/pkg/util/exit"
-	"github.com/tmrts/boilr/pkg/util/tabular"
-	"github.com/tmrts/boilr/pkg/util/validate"
+	"github.com/seanlatimer/boilr/pkg/boilr"
+	"github.com/seanlatimer/boilr/pkg/template"
+	"github.com/seanlatimer/boilr/pkg/util/exit"
+	"github.com/seanlatimer/boilr/pkg/util/tabular"
+	"github.com/seanlatimer/boilr/pkg/util/validate"
 )
 
 // ListTemplates returns a list of templates saved in the local template registry.

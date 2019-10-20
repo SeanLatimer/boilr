@@ -1,11 +1,13 @@
 package validate
 
 import (
+	"io/ioutil"
+	"os"
 	"reflect"
 	"runtime"
 	"strings"
 
-	"github.com/tmrts/boilr/pkg/util/validate/pattern"
+	"github.com/seanlatimer/boilr/pkg/util/validate/pattern"
 )
 
 // String is the validation function used for checking whether a string is valid or not.
@@ -30,7 +32,17 @@ func URL(url string) bool {
 
 // UnixPath validates whether a string is an unix path string.
 func UnixPath(path string) bool {
-	return pattern.UnixPath.MatchString(path)
+	if _, err := os.Stat(path); err == nil {
+		return true
+	}
+
+	var b []byte
+	if err := ioutil.WriteFile(path, b, 0644); err == nil {
+		os.Remove(path)
+		return true
+	}
+
+	return false
 }
 
 // Alphanumeric validates whether a string is an alphanumeric string.

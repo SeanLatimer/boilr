@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/tmrts/boilr/pkg/template"
-	"github.com/tmrts/boilr/pkg/util/osutil"
-	"github.com/tmrts/boilr/pkg/util/validate"
+	"github.com/seanlatimer/boilr/pkg/template"
+	"github.com/seanlatimer/boilr/pkg/util/osutil"
+	"github.com/seanlatimer/boilr/pkg/util/validate"
 )
 
 var (

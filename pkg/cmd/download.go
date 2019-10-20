@@ -6,12 +6,12 @@ import (
 
 	cli "github.com/spf13/cobra"
 
-	"github.com/tmrts/boilr/pkg/boilr"
-	"github.com/tmrts/boilr/pkg/host"
-	"github.com/tmrts/boilr/pkg/util/exit"
-	"github.com/tmrts/boilr/pkg/util/git"
-	"github.com/tmrts/boilr/pkg/util/osutil"
-	"github.com/tmrts/boilr/pkg/util/validate"
+	"github.com/seanlatimer/boilr/pkg/boilr"
+	"github.com/seanlatimer/boilr/pkg/host"
+	"github.com/seanlatimer/boilr/pkg/util/exit"
+	"github.com/seanlatimer/boilr/pkg/util/git"
+	"github.com/seanlatimer/boilr/pkg/util/osutil"
+	"github.com/seanlatimer/boilr/pkg/util/validate"
 )
 
 // Download contains the cli-command for downloading templates from github.
@@ -21,7 +21,7 @@ var Download = &cli.Command{
 	// FIXME Half-Updates leave messy templates
 	Run: func(c *cli.Command, args []string) {
 		MustValidateArgs(args, []validate.Argument{
-			{"template-repo", validate.UnixPath},
+			{"template-repo", validate.URL},
 			{"template-tag", validate.AlphanumericExt},
 		})
 

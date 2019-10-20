@@ -3,29 +3,8 @@ package pattern_test
 import (
 	"testing"
 
-	"github.com/tmrts/boilr/pkg/util/validate/pattern"
+	"github.com/seanlatimer/boilr/pkg/util/validate/pattern"
 )
-
-func TestUnixPathPattern(t *testing.T) {
-	tests := []struct {
-		String string
-		Valid  bool
-	}{
-		{"", false},
-		{"/", true},
-		{"/root", true},
-		{"/tmp-dir", true},
-		{"/tmp-dir/new_dir", true},
-		{"/TMP/dir", true},
-		{"rel/dir", true},
-	}
-
-	for _, test := range tests {
-		if ok := pattern.UnixPath.MatchString(test.String); ok != test.Valid {
-			t.Errorf("pattern.UnixPath.MatchString(%q) expected to be %v", test.String, test.Valid)
-		}
-	}
-}
 
 func TestAlphanumericPattern(t *testing.T) {
 	tests := []struct {
@@ -99,10 +78,10 @@ func TestURLPattern(t *testing.T) {
 		{" ", false},
 		{"/", false},
 		{"http://", false},
-		{"http://github.com/tmrts/boilr", true},
-		{"https://github.com/tmrts/boilr", true},
-		{"github.com/tmrts/boilr", true},
-		{"rawcontent.github.com/tmrts/boilr", true},
+		{"http://github.com/seanlatimer/boilr", true},
+		{"https://github.com/seanlatimer/boilr", true},
+		{"github.com/seanlatimer/boilr", true},
+		{"rawcontent.github.com/seanlatimer/boilr", true},
 		{"github.com:80/tmrts/boilr", true},
 	}
 
