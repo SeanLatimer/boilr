@@ -229,7 +229,7 @@ func (t *dirTemplate) Execute(dirPrefix string) error {
 
 			var shouldCopy bool
 			for _, copy := range t.CopyOnly {
-				if strings.Replace(copy, "/", "\\", -1) == newName {
+				if strings.Replace(copy, "/", "\\", -1) == strings.Replace(newName, "/", "\\", -1) {
 					shouldCopy = true
 					break
 				}
